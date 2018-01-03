@@ -10,5 +10,12 @@ import android.view.View;
 
 public interface UserDataSource {
 
-    LiveData<ViewDataBean<UserBean>> queryByUsername(String name);
+    interface Result<T> {
+
+        void onSuccess(T data);
+
+        void onFailed(Throwable throwable);
+    }
+
+    LiveData<ViewDataBean<UserBean>> queryByUsername(String name, Result<UserBean> result);
 }
