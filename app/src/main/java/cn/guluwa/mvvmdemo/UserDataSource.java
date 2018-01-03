@@ -2,6 +2,7 @@ package cn.guluwa.mvvmdemo;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.view.View;
 
 /**
  * Created by guluwa on 2018/1/3.
@@ -9,5 +10,5 @@ import android.arch.lifecycle.MutableLiveData;
 
 public interface UserDataSource {
 
-    LiveData<UserBean> queryByUsername(String name);
+    LiveData<ViewDataBean<UserBean>> queryByUsername(String name);
 }

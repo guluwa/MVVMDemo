@@ -30,7 +30,7 @@ public class UserRepository {
         this.context = context.getApplicationContext();
     }
 
-    public LiveData<UserBean> getUser(String name) {
+    public LiveData<ViewDataBean<UserBean>> getUser(String name) {
         if (Utils.isConnected(context)) {
             return remoteUserDataSource.queryByUsername(name);
         } else {

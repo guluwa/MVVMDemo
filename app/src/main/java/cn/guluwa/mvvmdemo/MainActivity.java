@@ -13,7 +13,11 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,7 +30,9 @@ public class MainActivity extends AppCompatActivity {
         return mUserName;
     }
 
-    private TextView tvUserName, tvUserId;
+    private EditText etUserName;
+    private TextView tvStatus, tvSearch;
+    private ImageView ivUserImg;
     private MainViewModel mViewModel;
     private int index;
 
@@ -42,24 +48,48 @@ public class MainActivity extends AppCompatActivity {
 
     private void initData() {
         index = 0;
-        tvUserName = findViewById(R.id.tvUserName);
-        tvUserId = findViewById(R.id.tvUserId);
-        //LiveData绑定
-        Observer<String> observer = new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                tvUserName.setText(s);
-            }
-        };
-        getUserName().observe(this, observer);
+        etUserName = findViewById(R.id.etUserName);
+        tvStatus = findViewById(R.id.tvStatus);
+        tvSearch = findViewById(R.id.tvSearch);
+        ivUserImg = findViewById(R.id.ivUserImg);
+
         //ViewModel
         mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-        mViewModel.getUser("drakeet").observe(this, new Observer<UserBean>() {
+        mViewModel.getUser().observe(this, new Observer<ViewDataBean<UserBean>>() {
             @Override
-            public void onChanged(@Nullable UserBean userBean) {
-                if (userBean == null) return;
-                tvUserName.setText(userBean.getName());
-                tvUserId.setText(String.valueOf(userBean.getId()));
+            public void onChanged(@Nullable ViewDataBean<UserBean> userBean) {
+                if (userBean == null) {
+                    tvStatus.setText("数据为空");
+                    return;
+                }
+                switch (userBean.status) {
+                    case Content:
+                        Glide.with(MainActivity.this).asBitmap()
+                                .load(userBean.data.getAvatar_url())
+                                .into(ivUserImg);
+                        tvStatus.setText("展示数据");
+                        break;
+                    case Empty:
+                        tvStatus.setText("数据为空");
+                        ivUserImg.setImageBitmap(null);
+                        break;
+                    case Error:
+                        tvStatus.setText("数据错误");
+                        ivUserImg.setImageBitmap(null);
+                        break;
+                    case Loading:
+                        tvStatus.setText("正在加载");
+                        ivUserImg.setImageBitmap(null);
+                        break;
+                }
+            }
+        });
+
+        //开始查询
+        tvSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mViewModel.setUserName(etUserName.getText().toString().trim());
             }
         });
     }

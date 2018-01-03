@@ -23,16 +23,18 @@ public class RemoteUserDataSource implements UserDataSource {
     }
 
     @Override
-    public LiveData<UserBean> queryByUsername(String name) {
-        final MutableLiveData<UserBean> user = new MutableLiveData<>();
+    public LiveData<ViewDataBean<UserBean>> queryByUsername(String name) {
+        final MutableLiveData<ViewDataBean<UserBean>> user = new MutableLiveData<>();
         RetrofitFactory.getInstance().create(ApiService.class)
                 .queryUserByUsername(name)
                 .enqueue(new Callback<UserBean>() {
                     @Override
                     public void onResponse(Call<UserBean> call, Response<UserBean> response) {
-                        if (null == response.body())
+                        if (null == response.body()) {
+                            user.setValue(ViewDataBean.<UserBean>empty());
                             return;
-                        user.setValue(response.body());
+                        }
+                        user.setValue(ViewDataBean.content(response.body()));
                         // update cache
                         LocalUserDataSource.getInstance().addUser(response.body());
                     }
@@ -40,6 +42,7 @@ public class RemoteUserDataSource implements UserDataSource {
                     @Override
                     public void onFailure(Call<UserBean> call, Throwable t) {
                         t.printStackTrace();
+                        user.setValue(ViewDataBean.<UserBean>error(t));
                     }
                 });
         return user;
